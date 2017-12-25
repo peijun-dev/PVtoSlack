@@ -7,6 +7,10 @@ using System.Net;
 using System.Text;
 using System.Security.Cryptography.X509Certificates;
 using Google.Apis.Analytics.v3.Data;
+using System.Reflection;
+using Microsoft.VisualBasic.FileIO;
+
+
 
 namespace PVtoSlack
 {
@@ -15,11 +19,26 @@ namespace PVtoSlack
         
         static void Main(string[] args)
         {
+            //apikey.p12の設定
+            Console.Write("apikey.p12のパスを入力してください。: ");
+            var apikey1 = Console.ReadLine();
+            
             //webhookurlの取得
             Console.Write("WebhookURLを入力してください。 : ");
             var webhook = Console.ReadLine(); 
             string WEBHOOK_URL = webhook;
 
+            //実行ファイルのパスを取得
+            Assembly myAssembly = Assembly.GetEntryAssembly();
+            string path = myAssembly.Location;
+
+            //APIkeyのパスを生成
+            string path1 = path.Replace("PVtoSlack.exe", "");
+            string path2 = (path + "apikey.p12");
+
+            // ファイルをコピーする
+            FileSystem.CopyFile(apikey1,path2, showUI: UIOption.AllDialogs);
+                        
             //APIkeyの設定
             X509Certificate2 certificate = new X509Certificate2(@"apikey.p12", "notasecret", X509KeyStorageFlags.Exportable);
 
