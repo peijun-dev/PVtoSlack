@@ -16,13 +16,17 @@ namespace PVtoSlack
 {
     class Program
     {
-        static string WEBHOOK_URL = "https://hooks.slack.com/services/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";
-
-
+        
         static void Main(string[] args)
         {
+            Console.Write("WebhookURLを入力してください。 : ");
+            var webhook = Console.ReadLine(); // ユーザーの入力した文字列を1行読み込む
+            string WEBHOOK_URL = webhook;
+
+            //APIkeyの設定
             X509Certificate2 certificate = new X509Certificate2(@"apikey.p12", "notasecret", X509KeyStorageFlags.Exportable);
 
+            //APIの設定
             string serviceAccountEmail = "pvtoslack@pvtoslack.iam.gserviceaccount.com";
             ServiceAccountCredential credential = new ServiceAccountCredential(new ServiceAccountCredential.Initializer(serviceAccountEmail)
             {
@@ -38,12 +42,14 @@ namespace PVtoSlack
 
             string date = DateTime.Now.AddDays(-1).ToString("yyyy-MM-dd");
 
+            //PVの取得
             DataResource.GaResource.GetRequest request = service.Data.Ga.Get("ga:133305208", date, date, "ga:pageviews");
 
             GaData data = request.Execute();
             
             var wc = new WebClient();
 
+            //送信するBOTの設定
             var pvinfo = DynamicJson.Serialize(new
             {
                 text = (data.Rows[0][0]),
@@ -54,7 +60,7 @@ namespace PVtoSlack
             wc.Headers.Add(HttpRequestHeader.ContentType, "application/json;charset=UTF-8");
             wc.Encoding = Encoding.UTF8;
 
-
+            //送信
             wc.UploadString(WEBHOOK_URL, pvinfo);
         }
 
