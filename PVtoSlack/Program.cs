@@ -3,12 +3,8 @@ using Google.Apis.Analytics.v3;
 using Google.Apis.Auth.OAuth2;
 using Google.Apis.Services;
 using System;
-using System.Configuration;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Text;
-using System.Windows;
 using System.Security.Cryptography.X509Certificates;
 using Google.Apis.Analytics.v3.Data;
 
@@ -19,15 +15,19 @@ namespace PVtoSlack
         
         static void Main(string[] args)
         {
+            //webhookurlの取得
             Console.Write("WebhookURLを入力してください。 : ");
-            var webhook = Console.ReadLine(); // ユーザーの入力した文字列を1行読み込む
+            var webhook = Console.ReadLine(); 
             string WEBHOOK_URL = webhook;
 
             //APIkeyの設定
             X509Certificate2 certificate = new X509Certificate2(@"apikey.p12", "notasecret", X509KeyStorageFlags.Exportable);
 
             //APIの設定
-            string serviceAccountEmail = "pvtoslack@pvtoslack.iam.gserviceaccount.com";
+            Console.Write("APIのIDを入力してください。 : ");
+            var id = Console.ReadLine();
+
+            string serviceAccountEmail = id;
             ServiceAccountCredential credential = new ServiceAccountCredential(new ServiceAccountCredential.Initializer(serviceAccountEmail)
             {
                 Scopes = new[] { AnalyticsService.Scope.Analytics, AnalyticsService.Scope.AnalyticsReadonly }
@@ -43,7 +43,10 @@ namespace PVtoSlack
             string date = DateTime.Now.AddDays(-1).ToString("yyyy-MM-dd");
 
             //PVの取得
-            DataResource.GaResource.GetRequest request = service.Data.Ga.Get("ga:133305208", date, date, "ga:pageviews");
+            Console.Write("GA：");
+            var ga = Console.ReadLine();
+            var ga1 = "ga:" + ga;
+            DataResource.GaResource.GetRequest request = service.Data.Ga.Get(ga1, date, date, "ga:pageviews");
 
             GaData data = request.Execute();
             
@@ -60,8 +63,14 @@ namespace PVtoSlack
             wc.Headers.Add(HttpRequestHeader.ContentType, "application/json;charset=UTF-8");
             wc.Encoding = Encoding.UTF8;
 
-            //送信
-            wc.UploadString(WEBHOOK_URL, pvinfo);
+            while (true) {
+                //送信
+                wc.UploadString(WEBHOOK_URL, pvinfo);
+
+                //1日待機
+                System.Threading.Thread.Sleep(86400000);
+            }
+
         }
 
         
